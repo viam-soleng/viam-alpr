@@ -19,7 +19,7 @@ func main() {
 	// NewLoggerFromArgs will create a logging.Logger at "DebugLevel" if
 	// "--log-level=debug" is an argument in os.Args and at "InfoLevel" otherwise.
 	// TODO: Change the name of the logger from customcamera to the name of the module your are creating
-	utils.ContextualMain(mainWithArgs, module.NewLoggerFromArgs("customcamera"))
+	utils.ContextualMain(mainWithArgs, module.NewLoggerFromArgs("viamalpr"))
 }
 
 func mainWithArgs(ctx context.Context, args []string, logger logging.Logger) (err error) {

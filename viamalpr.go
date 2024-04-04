@@ -21,12 +21,12 @@ import (
 // viam-labs = namespace, go-module-templates-camera = repo-name, customcamera = model name.
 // TODO: Change model namespace, family (often the repo-name), and model. For more information see https://docs.viam.com/registry/create/#name-your-new-resource-model
 var (
-	Model            = resource.NewModel("viam-soleng", "go-module-templates-camera", "customcamera")
+	Model            = resource.NewModel("viam-soleng", "vision", "viamalpr")
 	errUnimplemented = errors.New("unimplemented")
 )
 
 func init() {
-	resource.RegisterComponent(vision.API, Model,
+	resource.RegisterService(vision.API, Model,
 		resource.Registration[vision.Service, *Config]{
 			Constructor: newViamAlpr,
 		},
@@ -68,7 +68,7 @@ func newViamAlpr(ctx context.Context, deps resource.Dependencies, rawConf resour
 	// Create a cancelable context for custom camera
 	cancelCtx, cancelFunc := context.WithCancel(context.Background())
 
-	c := &viamAlpr{
+	viamAlpr := &viamAlpr{
 		name:       rawConf.ResourceName(),
 		logger:     logger,
 		cfg:        conf,
@@ -79,12 +79,12 @@ func newViamAlpr(ctx context.Context, deps resource.Dependencies, rawConf resour
 	// TODO: If your custom component has dependencies, perform any checks you need to on them.
 
 	// The Reconfigure() method changes the values on the customCamera based on the attributes in the component config
-	if err := c.Reconfigure(ctx, deps, rawConf); err != nil {
+	if err := viamAlpr.Reconfigure(ctx, deps, rawConf); err != nil {
 		logger.Error("Error configuring module with ", err)
 		return nil, err
 	}
 
-	return c, nil
+	return viamAlpr, nil
 }
 
 // TODO: update the viamAlpr struct with any fields you require.
@@ -101,58 +101,58 @@ type viamAlpr struct {
 }
 
 // Name implements vision.Service.
-func (c *viamAlpr) Name() resource.Name {
+func (va *viamAlpr) Name() resource.Name {
 	panic("unimplemented")
 }
 
 // Reconfigures the model. Most models can be reconfigured in place without needing to rebuild. If you need to instead create a new instance of the camera, throw a NewMustBuildError.
-func (c *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
+func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
 	cameraConfig, err := resource.NativeConfig[*Config](conf)
 	if err != nil {
 		//c.logger.Warn("Error reconfiguring module with ", rawConf)
 		return err
 	}
 
-	c.argumentOne = cameraConfig.ArgumentOne
-	c.argumentTwo = cameraConfig.ArgumentTwo
-	c.name = conf.ResourceName()
-	c.logger.Info("one is now configured to: ", c.argumentOne)
-	c.logger.Info("two is now configured to ", c.argumentTwo)
+	va.argumentOne = cameraConfig.ArgumentOne
+	va.argumentTwo = cameraConfig.ArgumentTwo
+	va.name = conf.ResourceName()
+	va.logger.Info("one is now configured to: ", va.argumentOne)
+	va.logger.Info("two is now configured to ", va.argumentTwo)
 
 	return nil
 }
 
 // Classifications implements vision.Service.
-func (c *viamAlpr) Classifications(ctx context.Context, img image.Image, n int, extra map[string]interface{}) (classification.Classifications, error) {
+func (va *viamAlpr) Classifications(ctx context.Context, img image.Image, n int, extra map[string]interface{}) (classification.Classifications, error) {
 	return nil, errUnimplemented
 }
 
 // ClassificationsFromCamera implements vision.Service.
-func (c *viamAlpr) ClassificationsFromCamera(ctx context.Context, cameraName string, n int, extra map[string]interface{}) (classification.Classifications, error) {
+func (va *viamAlpr) ClassificationsFromCamera(ctx context.Context, cameraName string, n int, extra map[string]interface{}) (classification.Classifications, error) {
 	return nil, errUnimplemented
 }
 
 // Detections implements vision.Service.
-func (c *viamAlpr) Detections(ctx context.Context, img image.Image, extra map[string]interface{}) ([]objectdetection.Detection, error) {
+func (va *viamAlpr) Detections(ctx context.Context, img image.Image, extra map[string]interface{}) ([]objectdetection.Detection, error) {
 	return nil, errUnimplemented
 }
 
 // DetectionsFromCamera implements vision.Service.
-func (c *viamAlpr) DetectionsFromCamera(ctx context.Context, cameraName string, extra map[string]interface{}) ([]objectdetection.Detection, error) {
+func (va *viamAlpr) DetectionsFromCamera(ctx context.Context, cameraName string, extra map[string]interface{}) ([]objectdetection.Detection, error) {
 	return nil, errUnimplemented
 }
 
 // GetObjectPointClouds implements vision.Service.
-func (c *viamAlpr) GetObjectPointClouds(ctx context.Context, cameraName string, extra map[string]interface{}) ([]*vis.Object, error) {
+func (va *viamAlpr) GetObjectPointClouds(ctx context.Context, cameraName string, extra map[string]interface{}) ([]*vis.Object, error) {
 	return nil, errUnimplemented
 }
 
 // DoCommand implements vision.Service.
-func (c *viamAlpr) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
+func (va *viamAlpr) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
 	return nil, errUnimplemented
 }
 
 // Close implements vision.Service.
-func (c *viamAlpr) Close(ctx context.Context) error {
+func (va *viamAlpr) Close(ctx context.Context) error {
 	return errUnimplemented
 }

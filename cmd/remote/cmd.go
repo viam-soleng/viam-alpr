@@ -7,8 +7,8 @@ import (
 
 	alpr "github.com/viam-soleng/viam-alpr"
 	"go.viam.com/rdk/module"
+	"go.viam.com/rdk/services/vision"
 
-	"go.viam.com/rdk/components/camera"
 	"go.viam.com/rdk/config"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
@@ -41,15 +41,15 @@ func mainWithArgs(ctx context.Context, args []string, logger logging.Logger) (er
 		Components: []resource.Config{
 			{
 				Name:  os.Args[1],
-				API:   camera.API,
+				API:   vision.API,
 				Model: alpr.Model,
 				Attributes: rdkutils.AttributeMap{
 					"one": arg_2_converted,
 					"two": os.Args[3],
 				},
 				ConvertedAttributes: &alpr.Config{
-					ArgumentOne: arg_2_converted,
-					ArgumentTwo: os.Args[3],
+					//ArgumentOne: arg_2_converted,
+					//ArgumentTwo: os.Args[3],
 				},
 			},
 		},
