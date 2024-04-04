@@ -6,7 +6,7 @@
   "models": [
     {
       "api": "rdk:service:vision",
-      "model": "viam-soleng:vision:viamalpr"
+      "model": "viam-soleng:vision:openalpr"
     }
   ],
   "entrypoint": "viam-alpr.AppImage"
