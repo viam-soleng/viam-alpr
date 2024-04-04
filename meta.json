@@ -1,0 +1,13 @@
+{
+  "module_id": "viam-soleng:viamalpr",
+  "visibility": "private",
+  "url": "https://github.com/viam-soleng/viam-alpr",
+  "description": "An OpenALPR based automatic license plate recognition module.",
+  "models": [
+    {
+      "api": "rdk:service:vision",
+      "model": "viam-soleng:vision:viamalpr"
+    }
+  ],
+  "entrypoint": "viam-alpr.AppImage"
+}
