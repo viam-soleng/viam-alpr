@@ -4,17 +4,21 @@
 package viamalpr
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"image"
+	"image/jpeg"
+	"os"
+	"sync"
 
+	"github.com/openalpr/openalpr/src/bindings/go/openalpr"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/services/vision"
 	vis "go.viam.com/rdk/vision"
 	"go.viam.com/rdk/vision/classification"
 	"go.viam.com/rdk/vision/objectdetection"
-	"go.viam.com/utils"
 )
 
 // Here is where we define your new model's colon-delimited-triplet (viam-labs:go-module-templates-camera:customcamera)
@@ -23,6 +27,8 @@ import (
 var (
 	Model            = resource.NewModel("viam-soleng", "vision", "viamalpr")
 	errUnimplemented = errors.New("unimplemented")
+	PrettyName       = "Viam openalpr vision service"
+	Description      = "A Viam automatic license plate recognition module based upon OpenALPR"
 )
 
 func init() {
@@ -36,20 +42,19 @@ func init() {
 // TODO: Change the Config struct to contain any values that you would like to be able to configure from the attributes field in the component
 // configuration. For more information see https://docs.viam.com/build/configure/#components
 type Config struct {
-	ArgumentOne int    `json:"one"`
-	ArgumentTwo string `json:"two"`
+	Country    string `json:"country"`
+	ConfigFile string `json:"config_file"`
+	RuntimeDir string `json:"runtime_dir"`
 }
 
 // Validate validates the config and returns implicit dependencies.
 // TODO: Change the Validate function to validate any config variables.
 func (cfg *Config) Validate(path string) ([]string, error) {
-	if cfg.ArgumentOne == 0 {
-		return nil, utils.NewConfigValidationFieldRequiredError(path, "one")
-	}
-
-	if cfg.ArgumentTwo == "" {
-		return nil, utils.NewConfigValidationFieldRequiredError(path, "two")
-	}
+	/*
+		if cfg.ArgumentOne == 0 {
+			return nil, utils.NewConfigValidationFieldRequiredError(path, "one")
+		}
+	*/
 
 	// TODO: return implicit dependencies if needed as the first value
 	return []string{}, nil
@@ -60,6 +65,7 @@ func (cfg *Config) Validate(path string) ([]string, error) {
 func newViamAlpr(ctx context.Context, deps resource.Dependencies, rawConf resource.Config, logger logging.Logger) (vision.Service, error) {
 	// This takes the generic resource.Config passed down from the parent and converts it to the
 	// model-specific (aka "native") Config structure defined above, making it easier to directly access attributes.
+	logger.Debugf("Starting %s %s", PrettyName)
 	conf, err := resource.NativeConfig[*Config](rawConf)
 	if err != nil {
 		return nil, err
@@ -74,6 +80,8 @@ func newViamAlpr(ctx context.Context, deps resource.Dependencies, rawConf resour
 		cfg:        conf,
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
+		mu:         sync.RWMutex{},
+		done:       make(chan bool),
 	}
 
 	// TODO: If your custom component has dependencies, perform any checks you need to on them.
@@ -95,9 +103,13 @@ type viamAlpr struct {
 
 	cancelCtx  context.Context
 	cancelFunc func()
+	country    string
+	configFile string
+	runtimeDir string
+	mu         sync.RWMutex
+	done       chan bool
 
-	argumentOne int
-	argumentTwo string
+	alpr openalpr.Alpr
 }
 
 // Name implements vision.Service.
@@ -107,18 +119,37 @@ func (va *viamAlpr) Name() resource.Name {
 
 // Reconfigures the model. Most models can be reconfigured in place without needing to rebuild. If you need to instead create a new instance of the camera, throw a NewMustBuildError.
 func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
-	cameraConfig, err := resource.NativeConfig[*Config](conf)
+	va.mu.Lock()
+	defer va.mu.Unlock()
+
+	// TODO: Make NewAlpr configurable
+	newConf, err := resource.NativeConfig[*Config](conf)
 	if err != nil {
-		//c.logger.Warn("Error reconfiguring module with ", rawConf)
 		return err
 	}
-
-	va.argumentOne = cameraConfig.ArgumentOne
-	va.argumentTwo = cameraConfig.ArgumentTwo
+	if newConf.Country != "" {
+		va.country = newConf.Country
+	} else {
+		va.country = "us"
+	}
+	if newConf.ConfigFile != "" {
+		va.configFile = newConf.ConfigFile
+	} else {
+		va.configFile = ""
+	}
+	if newConf.RuntimeDir != "" {
+		va.runtimeDir = newConf.RuntimeDir
+	} else {
+		va.runtimeDir = os.Getenv("APPDIR") + "/usr/share/openalpr/runtime_data"
+	}
+	va.alpr = *openalpr.NewAlpr(va.country, va.configFile, va.runtimeDir) // Defaults ("us", "", "./runtime_data")
+	if !va.alpr.IsLoaded() {
+		return errors.New("openalpr failed to load")
+	}
+	va.alpr.SetTopN(20)
+	va.logger.Debugf("openalpr version: %v", openalpr.GetVersion())
 	va.name = conf.ResourceName()
-	va.logger.Info("one is now configured to: ", va.argumentOne)
-	va.logger.Info("two is now configured to ", va.argumentTwo)
-
+	va.logger.Debug("**** Reconfigured ****")
 	return nil
 }
 
@@ -134,12 +165,17 @@ func (va *viamAlpr) ClassificationsFromCamera(ctx context.Context, cameraName st
 
 // Detections implements vision.Service.
 func (va *viamAlpr) Detections(ctx context.Context, img image.Image, extra map[string]interface{}) ([]objectdetection.Detection, error) {
-	return nil, errUnimplemented
+	detections, err := va.detectAlpr(img)
+	if err != nil {
+		return nil, err
+	}
+	return detections, nil
 }
 
 // DetectionsFromCamera implements vision.Service.
 func (va *viamAlpr) DetectionsFromCamera(ctx context.Context, cameraName string, extra map[string]interface{}) ([]objectdetection.Detection, error) {
-	return nil, errUnimplemented
+	va.detectAlpr(nil)
+	return nil, nil
 }
 
 // GetObjectPointClouds implements vision.Service.
@@ -154,5 +190,46 @@ func (va *viamAlpr) DoCommand(ctx context.Context, cmd map[string]interface{}) (
 
 // Close implements vision.Service.
 func (va *viamAlpr) Close(ctx context.Context) error {
-	return errUnimplemented
+	va.logger.Debugf("Shutting down %s", PrettyName)
+	va.alpr.Unload()
+	return nil
+}
+
+func (va *viamAlpr) detectAlpr(img image.Image) ([]objectdetection.Detection, error) {
+	/*
+		resultFromFilePath, err := svc.alpr.RecognizeByFilePath("lp.jpg")
+		if err != nil {
+			fmt.Println(err)
+		}
+		svc.logger.Infof("Detections: %v", resultFromFilePath)
+		//fmt.Printf("%+v\n", resultFromFilePath)
+		//fmt.Printf("\n\n\n")
+	*/
+	buf := new(bytes.Buffer)
+	err := jpeg.Encode(buf, img, nil)
+	if err != nil {
+		return nil, err
+	}
+	imageBytes := buf.Bytes()
+
+	/*
+		imageBytes, err := os.ReadFile("lp.jpg")
+		if err != nil {
+			fmt.Println(err)
+		}
+	*/
+	resultFromBlob, err := va.alpr.RecognizeByBlob(imageBytes)
+	if err != nil {
+		return nil, err
+	}
+	va.logger.Debugf("%v", resultFromBlob)
+	detections := []objectdetection.Detection{}
+	for _, result := range resultFromBlob.Plates {
+		minPoint := image.Point{result.PlatePoints[0].X, result.PlatePoints[0].Y}
+		maxPoint := image.Point{result.PlatePoints[3].X, result.PlatePoints[3].Y}
+		bbox := image.Rectangle{minPoint, maxPoint}
+		detection := objectdetection.NewDetection(bbox, float64(result.TopNPlates[result.PlateIndex].OverallConfidence), result.BestPlate)
+		detections = append(detections, detection)
+	}
+	return detections, nil
 }

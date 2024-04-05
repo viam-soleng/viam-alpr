@@ -1,0 +1,95 @@
+# appimage-builder recipe see https://appimage-builder.readthedocs.io for details
+version: 1
+script:
+ - rm -rf $TARGET_APPDIR | true
+ - mkdir -p "$TARGET_APPDIR/usr/bin"
+ - cp ./bin/viam-alpr "$TARGET_APPDIR/usr/bin/"
+   #- mkdir -p "$TARGET_APPDIR/usr/lib"
+   # - cp -P ./lib/*.so* "$TARGET_APPDIR/usr/lib/"
+ - mkdir -p "$TARGET_APPDIR/usr/share/icons/viam/256x256/apps/"
+ - cp ./viam-server.png "$TARGET_APPDIR/usr/share/icons/viam/256x256/apps/viam-server.png"
+ #- chmod 755 "$TARGET_APPDIR/usr/bin/"*
+AppDir:
+  path: ./AppDir
+  app_info:
+    id: viamalpr
+    name: viamalpr
+    icon: viam-server
+    version: latest
+    exec: usr/bin/viam-alpr
+    exec_args: $@
+  apt:
+    arch:
+    - arm64
+    allow_unauthenticated: true
+    sources:
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy universe
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates universe
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted
+        universe multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted
+# appimage-builder recipe see https://appimage-builder.readthedocs.io for details
+version: 1
+script:
+ - rm -rf $TARGET_APPDIR | true
+ - mkdir -p "$TARGET_APPDIR/usr/bin"
+ - cp ./bin/viam-alpr "$TARGET_APPDIR/usr/bin/"
+   #- mkdir -p "$TARGET_APPDIR/usr/lib"
+   # - cp -P ./lib/*.so* "$TARGET_APPDIR/usr/lib/"
+ - mkdir -p "$TARGET_APPDIR/usr/share/icons/viam/256x256/apps/"
+ - cp ./viam-server.png "$TARGET_APPDIR/usr/share/icons/viam/256x256/apps/viam-server.png"
+ #- chmod 755 "$TARGET_APPDIR/usr/bin/"*
+AppDir:
+  path: ./AppDir
+  app_info:
+    id: viamalpr
+    name: viamalpr
+    icon: viam-server
+    version: latest
+    exec: usr/bin/viam-alpr
+    exec_args: $@
+  apt:
+    arch:
+    - arm64
+    allow_unauthenticated: true
+    sources:
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy universe
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates universe
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted
+        universe multiverse
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security universe
+    - sourceline: deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security multiverse
+    include:
+    - libbz2-1.0:arm64
+    - libcap2:arm64
+    - libcom-err2:arm64
+    - libdbus-1-3:arm64
+    - libexpat1:arm64
+    - libgcc-s1:arm64
+    - libgpg-error0:arm64
+    - libkeyutils1:arm64
+    - liblzma5:arm64
+    - libpcre3:arm64
+    - libselinux1:arm64
+    - libtirpc3:arm64
+    - zlib1g:arm64
+  files:
+    include:
+    - /lib/libopenalprgo.so.2
+    exclude:
+    - usr/share/man
+    - usr/share/doc/*/README.*
+    - usr/share/doc/*/changelog.*
+    - usr/share/doc/*/NEWS.*
+    - usr/share/doc/*/TODO.*
+AppImage:
+  arch: aarch64
