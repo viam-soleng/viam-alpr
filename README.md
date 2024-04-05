@@ -1,19 +1,18 @@
 > [!NOTE]
-> This is a module template. Read the [instructions](./Instructions.md) for a step by step guide on how to create your module.
+> This is a work in progress repo! The module in the Viam Registry is not yet 100% in line with this code base!
 
 
-# <INSERT NAME> modular resource
+# Viam-ALPR modular resource
 
-This module implements...
-With this model, you can...
+This module implements a Viam vision service to automatically recognise license plates "alpr". It is based upon the [OpenALPR](https://github.com/openalpr) project which is a battle tested and pretty much state of the art alpr capability.
 
 ## Requirements
 
-_Add instructions here for any requirements._
+The module and its dependencies are packed into an AppImage. Therefore FUSE is required. FUSE however is used for the installation of Viam server as well and should therefore be available already.
 
 ## Build and run
 
-To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the `<INSERT API NAMESPACE>:<INSERT API NAME>:<INSERT MODEL>` model from the [`<INSERT MODEL>` module](https://app.viam.com/module/<INSERT API NAMESPACE>/<INSERT MODEL>).
+To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the [`viamalpr` module](https://app.viam.com/module/viam-soleng/viamalpr).
 
 ## Configure your camera
 
