@@ -14,23 +14,17 @@ The module and its dependencies are packed into an AppImage. Therefore FUSE is r
 
 To use this module, follow the instructions to [add a module from the Viam Registry](https://docs.viam.com/registry/configure/#add-a-modular-resource-from-the-viam-registry) and select the [`viamalpr` module](https://app.viam.com/module/viam-soleng/viamalpr).
 
-## Configure your camera
+## Configure the viamalpr vision service
 
 > [!NOTE]
-> Before configuring your camera you must [create a machine](https://docs.viam.com/manage/fleet/machines/#add-a-new-machine).
+> Before configuring your viamalpr module you must [create a machine](https://docs.viam.com/manage/fleet/machines/#add-a-new-machine).
 
 Navigate to the **Config** tab of your machine's page in [the Viam app](https://app.viam.com/).
-Click on the **Components** subtab and click **Create component**.
-Select the `<INSERT API NAME>` type, then select the `<INSERT MODEL>` model.
-Click **Add module**, then enter a name for your camera and click **Create**.
+Click on the **Services** subtab and click **Create service**.
+Search for `viamalpr".
+Click **Add module**, then enter a name for your viamalpr service and click **Create**.
 
-On the new component panel, copy and paste the following attribute template into your camera’s **Attributes** box:
-
-```json
-{
-  <INSERT SAMPLE ATTRIBUTES>
-}
-```
+The viamalpr module doesn't require any additional configuration.
 
 > [!NOTE]
 > For more information, see [Configure a Machine](https://docs.viam.com/manage/configuration/).
@@ -41,14 +35,89 @@ The following attributes are available for `<INSERT API NAMESPACE>:<INSERT API N
 
 | Name    | Type   | Inclusion    | Description |
 | ------- | ------ | ------------ | ----------- |
-| `todo1` | string | **Required** | TODO        |
-| `todo2` | string | Optional     | TODO        |
+| `runtime_dir` | string | Optional | OpenALPR runtime_data folder e.g. /home/ubuntu/openalpr/runtime_data|
+| `config_file` | string | Optional     | OpenALPR config file e.g. /etc/openalpr/config/openalpr.conf        |
 
-### Example configuration
+### Full Smart Machine Example configuration
 
 ```json
 {
-  <INSERT SAMPLE CONFIGURATION(S)>
+  "services": [
+    {
+      "type": "vision",
+      "namespace": "rdk",
+      "model": "viam-soleng:vision:openalpr",
+      "attributes": {},
+      "name": "vision-alpr"
+    }
+  ],
+  "modules": [
+    {
+      "name": "viam-soleng_viamalpr",
+      "module_id": "viam-soleng:viamalpr",
+      "version": "0.0.3",
+      "type": "registry"
+    }
+  ],
+  "components": [
+    {
+      "namespace": "rdk",
+      "type": "camera",
+      "model": "image_file",
+      "attributes": {
+        "color_image_file_path": "/home/ubuntu/lp.jpg"
+      },
+      "name": "camera-file",
+      "depends_on": []
+    },
+    {
+      "name": "camera-transform",
+      "namespace": "rdk",
+      "type": "camera",
+      "model": "transform",
+      "depends_on": [],
+      "attributes": {
+        "pipeline": [
+          {
+            "attributes": {
+              "confidence_threshold": 0.1,
+              "detector_name": "vision-alpr"
+            },
+            "type": "detections"
+          }
+        ],
+        "source": "camera-file"
+      }
+    }
+  ],
+  "agent_config": {
+    "subsystems": {
+      "viam-agent": {
+        "pin_version": "",
+        "pin_url": "",
+        "disable_subsystem": false,
+        "release_channel": "stable"
+      },
+      "viam-server": {
+        "release_channel": "stable",
+        "pin_version": "",
+        "pin_url": "",
+        "disable_subsystem": false
+      },
+      "agent-provisioning": {
+        "pin_version": "",
+        "pin_url": "",
+        "disable_subsystem": false,
+        "release_channel": "stable"
+      },
+      "agent-syscfg": {
+        "release_channel": "stable",
+        "pin_version": "",
+        "pin_url": "",
+        "disable_subsystem": false
+      }
+    }
+  }
 }
 ```
 
