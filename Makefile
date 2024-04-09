@@ -1,6 +1,6 @@
 
 bin/viamalpr: *.go cmd/module/*.go go.*
-	go build -o bin/viamalpr cmd/module/cmd.go
+	go build -o bin/viam-alpr.AppImage cmd/module/cmd.go
 
 bin/remoteserver: *.go cmd/remote/*.go go.*
 	go build -o bin/remoteserver cmd/remote/cmd.go
@@ -13,4 +13,4 @@ updaterdk:
 	go mod tidy
 
 module: bin/viamalpr
-	tar czf module.tar.gz bin/viamalpr
+	tar czf module.tar.gz bin/*
