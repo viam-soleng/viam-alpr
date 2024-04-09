@@ -42,83 +42,45 @@ The following attributes are available for `<INSERT API NAMESPACE>:<INSERT API N
 
 ```json
 {
-  "services": [
-    {
-      "type": "vision",
-      "namespace": "rdk",
-      "model": "viam-soleng:vision:openalpr",
-      "attributes": {},
-      "name": "vision-alpr"
-    }
-  ],
-  "modules": [
-    {
-      "name": "viam-soleng_viamalpr",
-      "module_id": "viam-soleng:viamalpr",
-      "version": "0.0.3",
-      "type": "registry"
-    }
-  ],
-  "components": [
-    {
-      "namespace": "rdk",
-      "type": "camera",
-      "model": "image_file",
-      "attributes": {
-        "color_image_file_path": "/home/ubuntu/lp.jpg"
-      },
-      "name": "camera-file",
-      "depends_on": []
-    },
-    {
-      "name": "camera-transform",
-      "namespace": "rdk",
-      "type": "camera",
-      "model": "transform",
-      "depends_on": [],
-      "attributes": {
-        "pipeline": [
-          {
-            "attributes": {
-              "confidence_threshold": 0.1,
-              "detector_name": "vision-alpr"
-            },
-            "type": "detections"
-          }
-        ],
-        "source": "camera-file"
+    "components": [
+      {
+        "model": "transform",
+        "attributes": {
+          "source": "camera",
+          "pipeline": [
+            {
+              "type": "detections",
+              "attributes": {
+                "detector_name": "vision-alpr",
+                "confidence_threshold": 0.1
+              }
+            }
+          ]
+        },
+        "name": "camera-alpr",
+        "namespace": "rdk",
+        "type": "camera",
+        "depends_on": []
       }
-    }
-  ],
-  "agent_config": {
-    "subsystems": {
-      "viam-agent": {
-        "pin_version": "",
-        "pin_url": "",
-        "disable_subsystem": false,
-        "release_channel": "stable"
-      },
-      "viam-server": {
-        "release_channel": "stable",
-        "pin_version": "",
-        "pin_url": "",
-        "disable_subsystem": false
-      },
-      "agent-provisioning": {
-        "pin_version": "",
-        "pin_url": "",
-        "disable_subsystem": false,
-        "release_channel": "stable"
-      },
-      "agent-syscfg": {
-        "release_channel": "stable",
-        "pin_version": "",
-        "pin_url": "",
-        "disable_subsystem": false
+    ],
+    "services": [
+      {
+        "name": "vision-alpr",
+        "namespace": "rdk",
+        "type": "vision",
+        "model": "viam-soleng:vision:openalpr",
+        "attributes": {}
       }
-    }
+    ],
+    "modules": [
+      {
+        "module_id": "viam-soleng:viamalpr",
+        "version": "0.0.3",
+        "type": "registry",
+        "name": "viam-soleng_viamalpr"
+      }
+    ]
   }
-}
 ```
 
 ### Next steps
