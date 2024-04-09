@@ -9,7 +9,6 @@ import (
 	"errors"
 	"image"
 	"image/jpeg"
-	"os"
 	"sync"
 
 	"github.com/openalpr/openalpr/src/bindings/go/openalpr"
@@ -25,7 +24,7 @@ import (
 // viam-labs = namespace, go-module-templates-camera = repo-name, customcamera = model name.
 // TODO: Change model namespace, family (often the repo-name), and model. For more information see https://docs.viam.com/registry/create/#name-your-new-resource-model
 var (
-	Model            = resource.NewModel("viam-soleng", "vision", "viamalpr")
+	Model            = resource.NewModel("viam-soleng", "vision", "openalpr")
 	errUnimplemented = errors.New("unimplemented")
 	PrettyName       = "Viam openalpr vision service"
 	Description      = "A Viam automatic license plate recognition module based upon OpenALPR"
@@ -140,7 +139,8 @@ func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies,
 	if newConf.RuntimeDir != "" {
 		va.runtimeDir = newConf.RuntimeDir
 	} else {
-		va.runtimeDir = os.Getenv("APPDIR") + "/usr/share/openalpr/runtime_data"
+		//va.runtimeDir = os.Getenv("APPDIR") + "/usr/share/openalpr/runtime_data"
+		va.runtimeDir = "./openalpr/runtime_data"
 	}
 	va.alpr = *openalpr.NewAlpr(va.country, va.configFile, va.runtimeDir) // Defaults ("us", "", "./runtime_data")
 	if !va.alpr.IsLoaded() {
