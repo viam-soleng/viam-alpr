@@ -1,7 +1,3 @@
-> [!NOTE]
-> This is a work in progress repo! The module in the Viam Registry is not yet 100% in line with this code base!
-
-
 # Viam-ALPR modular resource
 
 This module implements a Viam vision service to automatically recognise license plates "alpr". It is based upon the [OpenALPR](https://github.com/openalpr) project which is a battle tested and pretty much state of the art alpr capability.
