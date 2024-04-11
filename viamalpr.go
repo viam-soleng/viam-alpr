@@ -134,13 +134,13 @@ func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies,
 	if newConf.ConfigFile != "" {
 		va.configFile = newConf.ConfigFile
 	} else {
-		va.configFile = ""
+		va.configFile = "../openalpr/openalpr.conf.user"
 	}
 	if newConf.RuntimeDir != "" {
 		va.runtimeDir = newConf.RuntimeDir
 	} else {
 		//va.runtimeDir = os.Getenv("APPDIR") + "/usr/share/openalpr/runtime_data"
-		va.runtimeDir = "./openalpr/runtime_data"
+		va.runtimeDir = "../openalpr/runtime_data"
 	}
 	va.alpr = *openalpr.NewAlpr(va.country, va.configFile, va.runtimeDir) // Defaults ("us", "", "./runtime_data")
 	if !va.alpr.IsLoaded() {

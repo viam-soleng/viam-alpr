@@ -9,5 +9,5 @@
       "model": "viam-soleng:vision:openalpr"
     }
   ],
-  "entrypoint": "viam-alpr.AppImage"
+  "entrypoint": "bin/viam-alpr.AppImage"
 }
