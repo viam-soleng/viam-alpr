@@ -1,0 +1,74 @@
+{
+    "components": [
+      {
+        "name": "camera-transform",
+        "namespace": "rdk",
+        "type": "camera",
+        "model": "transform",
+        "attributes": {
+          "source": "camera",
+          "pipeline": [
+            {
+              "type": "detections",
+              "attributes": {
+                "confidence_threshold": 0.1,
+                "detector_name": "vision-alpr"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "camera",
+        "namespace": "rdk",
+        "type": "camera",
+        "model": "webcam",
+        "attributes": {}
+      }
+    ],
+    "services": [
+      {
+        "name": "vision-alpr",
+        "namespace": "rdk",
+        "type": "vision",
+        "model": "viam-soleng:vision:openalpr",
+        "attributes": {}
+      }
+    ],
+    "modules": [
+      {
+        "type": "registry",
+        "name": "viam-soleng_viamalpr",
+        "module_id": "viam-soleng:viamalpr",
+        "version": "0.0.5"
+      }
+    ],
+    "agent_config": {
+      "subsystems": {
+        "viam-server": {
+          "pin_version": "",
+          "pin_url": "",
+          "disable_subsystem": false,
+          "release_channel": "stable"
+        },
+        "agent-provisioning": {
+          "release_channel": "stable",
+          "pin_version": "",
+          "pin_url": "",
+          "disable_subsystem": false
+        },
+        "agent-syscfg": {
+          "pin_url": "",
+          "disable_subsystem": false,
+          "release_channel": "stable",
+          "pin_version": ""
+        },
+        "viam-agent": {
+          "pin_url": "",
+          "disable_subsystem": false,
+          "release_channel": "stable",
+          "pin_version": ""
+        }
+      }
+    }
+  }

@@ -9,6 +9,8 @@ import (
 	"errors"
 	"image"
 	"image/jpeg"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/openalpr/openalpr/src/bindings/go/openalpr"
@@ -134,15 +136,24 @@ func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies,
 	if newConf.ConfigFile != "" {
 		va.configFile = newConf.ConfigFile
 	} else {
-		va.configFile = "../openalpr/openalpr.conf.user"
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		va.configFile = strings.TrimSuffix(wd, "/bin") + "/openalpr/openalpr.conf.user"
+		va.logger.Infof("openalpr config file: %s", va.configFile)
 	}
 	if newConf.RuntimeDir != "" {
 		va.runtimeDir = newConf.RuntimeDir
 	} else {
-		//va.runtimeDir = os.Getenv("APPDIR") + "/usr/share/openalpr/runtime_data"
-		va.runtimeDir = "../openalpr/runtime_data"
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		va.runtimeDir = strings.TrimSuffix(wd, "/bin") + "/openalpr/runtime_data"
+		va.logger.Infof("runtime_data directory: %s", va.runtimeDir)
 	}
-	va.alpr = *openalpr.NewAlpr(va.country, va.configFile, va.runtimeDir) // Defaults ("us", "", "./runtime_data")
+	va.alpr = *openalpr.NewAlpr(va.country, va.configFile, va.runtimeDir)
 	if !va.alpr.IsLoaded() {
 		return errors.New("openalpr failed to load")
 	}
