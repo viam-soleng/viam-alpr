@@ -40,48 +40,7 @@ The following attributes are available for `<INSERT API NAMESPACE>:<INSERT API N
 
 ### Full Smart Machine Example configuration
 
-```json
-{
-    "components": [
-      {
-        "model": "transform",
-        "attributes": {
-          "source": "camera",
-          "pipeline": [
-            {
-              "type": "detections",
-              "attributes": {
-                "detector_name": "vision-alpr",
-                "confidence_threshold": 0.1
-              }
-            }
-          ]
-        },
-        "name": "camera-alpr",
-        "namespace": "rdk",
-        "type": "camera",
-        "depends_on": []
-      }
-    ],
-    "services": [
-      {
-        "name": "vision-alpr",
-        "namespace": "rdk",
-        "type": "vision",
-        "model": "viam-soleng:vision:openalpr",
-        "attributes": {}
-      }
-    ],
-    "modules": [
-      {
-        "module_id": "viam-soleng:viamalpr",
-        "version": "0.0.3",
-        "type": "registry",
-        "name": "viam-soleng_viamalpr"
-      }
-    ]
-  }
-```
+[Viam Server Configuration](config-run.json)
 
 ### Next steps
 
