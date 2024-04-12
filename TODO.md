@@ -8,6 +8,7 @@ Outstanding action items.
 - [ ] Add additional openalpr configuration parameters -> see config files in the runtime_dir
 - [ ] Automate build process
   - [ ] Add build/bundling command for Mac: `dylibbundler -od -b -x viam-alpr`
+  - [ ] Optimize / prepare AppDir and AppImageBuild.yml so it can be used in an easier way with less complicated scripting
 
 ### In Progress
 
