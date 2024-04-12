@@ -4,9 +4,9 @@ Outstanding action items.
 
 ### Todo
 
-- [ ] Add build command for Mac including setting rpath  `dylibbundler -od -b -x viam-alpr.AppImage`
-- [ ] Update binary file name from viam-alpr.AppImage to viamalpr for the Linux appimage and the mac binary 
-  - [ ] ...  
+- [ ] Update binary file name from viam-alpr.AppImage to viam-alpr for the Linux appimage and the mac binary
+- [ ] Automate build process
+  - [ ] Add build/bundling command for Mac: `dylibbundler -od -b -x viam-alpr`
 
 ### In Progress
 
