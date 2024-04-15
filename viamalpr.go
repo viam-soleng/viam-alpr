@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/openalpr/openalpr/src/bindings/go/openalpr"
+	"go.viam.com/rdk/components/camera"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/services/vision"
@@ -43,9 +44,10 @@ func init() {
 // TODO: Change the Config struct to contain any values that you would like to be able to configure from the attributes field in the component
 // configuration. For more information see https://docs.viam.com/build/configure/#components
 type Config struct {
-	Country    string `json:"country"`
 	ConfigFile string `json:"config_file"`
 	RuntimeDir string `json:"runtime_dir"`
+	Country    string `json:"country"`
+	Pattern    string `json:"pattern"`
 }
 
 // Validate validates the config and returns implicit dependencies.
@@ -56,7 +58,6 @@ func (cfg *Config) Validate(path string) ([]string, error) {
 			return nil, utils.NewConfigValidationFieldRequiredError(path, "one")
 		}
 	*/
-
 	// TODO: return implicit dependencies if needed as the first value
 	return []string{}, nil
 }
@@ -102,13 +103,15 @@ type viamAlpr struct {
 	logger logging.Logger
 	cfg    *Config
 
-	cancelCtx  context.Context
-	cancelFunc func()
-	country    string
-	configFile string
-	runtimeDir string
-	mu         sync.RWMutex
-	done       chan bool
+	cancelCtx    context.Context
+	cancelFunc   func()
+	configFile   string
+	runtimeDir   string
+	country      string
+	pattern      string // not yet exposed through the api -> workaround via config file: https://github.com/viam-soleng/viam-alpr/blob/main/openalpr/config/alprd.conf.defaults
+	dependencies resource.Dependencies
+	mu           sync.RWMutex
+	done         chan bool
 
 	alpr openalpr.Alpr
 }
@@ -128,6 +131,9 @@ func (va *viamAlpr) Reconfigure(ctx context.Context, deps resource.Dependencies,
 	if err != nil {
 		return err
 	}
+
+	va.dependencies = deps
+
 	if newConf.Country != "" {
 		va.country = newConf.Country
 	} else {
@@ -185,8 +191,26 @@ func (va *viamAlpr) Detections(ctx context.Context, img image.Image, extra map[s
 
 // DetectionsFromCamera implements vision.Service.
 func (va *viamAlpr) DetectionsFromCamera(ctx context.Context, cameraName string, extra map[string]interface{}) ([]objectdetection.Detection, error) {
-	va.detectAlpr(nil)
-	return nil, nil
+	cam, err := camera.FromDependencies(va.dependencies, cameraName)
+	if err != nil {
+		return nil, err
+	}
+	stream, err := cam.Stream(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// gets an image from the camera stream
+	image, release, err := stream.Next(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	detections, err := va.detectAlpr(image)
+	if err != nil {
+		return nil, err
+	}
+	return detections, nil
 }
 
 // GetObjectPointClouds implements vision.Service.
@@ -207,15 +231,7 @@ func (va *viamAlpr) Close(ctx context.Context) error {
 }
 
 func (va *viamAlpr) detectAlpr(img image.Image) ([]objectdetection.Detection, error) {
-	/*
-		resultFromFilePath, err := svc.alpr.RecognizeByFilePath("lp.jpg")
-		if err != nil {
-			fmt.Println(err)
-		}
-		svc.logger.Infof("Detections: %v", resultFromFilePath)
-		//fmt.Printf("%+v\n", resultFromFilePath)
-		//fmt.Printf("\n\n\n")
-	*/
+
 	buf := new(bytes.Buffer)
 	err := jpeg.Encode(buf, img, nil)
 	if err != nil {
@@ -223,21 +239,15 @@ func (va *viamAlpr) detectAlpr(img image.Image) ([]objectdetection.Detection, er
 	}
 	imageBytes := buf.Bytes()
 
-	/*
-		imageBytes, err := os.ReadFile("lp.jpg")
-		if err != nil {
-			fmt.Println(err)
-		}
-	*/
 	resultFromBlob, err := va.alpr.RecognizeByBlob(imageBytes)
 	if err != nil {
 		return nil, err
 	}
-	va.logger.Debugf("%v", resultFromBlob)
+	va.logger.Debugf("Alpr Results: %v", resultFromBlob)
 	detections := []objectdetection.Detection{}
 	for _, result := range resultFromBlob.Plates {
 		minPoint := image.Point{result.PlatePoints[0].X, result.PlatePoints[0].Y}
-		maxPoint := image.Point{result.PlatePoints[3].X, result.PlatePoints[3].Y}
+		maxPoint := image.Point{result.PlatePoints[2].X, result.PlatePoints[2].Y}
 		bbox := image.Rectangle{minPoint, maxPoint}
 		detection := objectdetection.NewDetection(bbox, float64(result.TopNPlates[result.PlateIndex].OverallConfidence), result.BestPlate)
 		detections = append(detections, detection)
