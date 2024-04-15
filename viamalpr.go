@@ -103,12 +103,14 @@ type viamAlpr struct {
 	logger logging.Logger
 	cfg    *Config
 
-	cancelCtx    context.Context
-	cancelFunc   func()
-	configFile   string
-	runtimeDir   string
-	country      string
-	pattern      string // not yet exposed through the api -> workaround via config file: https://github.com/viam-soleng/viam-alpr/blob/main/openalpr/config/alprd.conf.defaults
+	cancelCtx  context.Context
+	cancelFunc func()
+	configFile string
+	runtimeDir string
+	country    string
+	// Pattern not yet exposed through the api
+	// Workaround via config file: https://github.com/viam-soleng/viam-alpr/blob/main/openalpr/config/alprd.conf.defaults
+	// pattern      string
 	dependencies resource.Dependencies
 	mu           sync.RWMutex
 	done         chan bool
