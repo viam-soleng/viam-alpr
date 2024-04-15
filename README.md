@@ -33,7 +33,7 @@ The following attributes are available for `<INSERT API NAMESPACE>:<INSERT API N
 | ------- | ------ | ------------ | ----------- |
 | `runtime_dir` | string | Optional | OpenALPR runtime_data folder e.g. /home/ubuntu/openalpr/runtime_data|
 | `config_file` | string | Optional     | OpenALPR config file e.g. /etc/openalpr/config/openalpr.conf        |
-| `country` | string | Optional     | Default: us other valid values are: us, eu, au, auwide, gb, kr, mx, sg -> see [openalpr/runtime_data/config](openalpr/runtime_data/config)|
+| `country` | string | Optional     | Default: "us" other valid values are: us, eu, au, auwide, gb, kr, mx, sg -> see [openalpr/runtime_data/config](openalpr/runtime_data/config)|
 
 ### Full Smart Machine Example configuration
 
