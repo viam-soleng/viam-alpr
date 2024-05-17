@@ -34,14 +34,10 @@ RUN cd openalpr/src/bindings/go/ && git clone https://github.com/viam-soleng/via
 RUN mkdir -p openalpr/src/bindings/go/viam-alpr/module/openalpr
 RUN cd /openalpr/src/bindings/go/viam-alpr/openalpr && cp -r config ../module/openalpr && cp -r runtime_data ../module/openalpr
 
-#LD_LIBRARY_PATH to be set in Linux module
+#LD_LIBRARY_PATH to be set in Linux module -> actually seems not needed
 RUN git clone https://github.com/cfallin/distify.git
 RUN cd distify/ && make && make install
 RUN cd /openalpr/src/bindings/go/viam-alpr/bin && distify viam-alpr.AppImage ../module/bin/
 
-
-# ONLY FOR MAC
-# Collect dependencies and update binary library path
-#RUN git clone https://github.com/auriamg/macdylibbundler.git
-#RUN cd macdylibbundler && make && make install
-#RUN cd /openalpr/src/bindings/go/viam-alpr/module && dylibbundler -od -b -x ./bin/viam-alpr
+# Build module.tar.gz
+RUN cd /openalpr/src/bindings/go/viam-alpr/module && tar czf module.tar.gz bin openalpr
