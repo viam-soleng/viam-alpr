@@ -3,3 +3,4 @@
 bin/viam-alpr.AppImage
 libs/
 /.venv
+module.tar.gz
